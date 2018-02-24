@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WebServer", "WebServer\WebServer.vcxproj", "{692B1DD1-B4E4-49C4-86E6-41D986404E2E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|ARM = Release|ARM
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{692B1DD1-B4E4-49C4-86E6-41D986404E2E}.Debug|ARM.ActiveCfg = Debug|ARM
+		{692B1DD1-B4E4-49C4-86E6-41D986404E2E}.Debug|ARM.Build.0 = Debug|ARM
+		{692B1DD1-B4E4-49C4-86E6-41D986404E2E}.Debug|x64.ActiveCfg = Debug|x64
+		{692B1DD1-B4E4-49C4-86E6-41D986404E2E}.Debug|x64.Build.0 = Debug|x64
+		{692B1DD1-B4E4-49C4-86E6-41D986404E2E}.Debug|x86.ActiveCfg = Debug|x86
+		{692B1DD1-B4E4-49C4-86E6-41D986404E2E}.Debug|x86.Build.0 = Debug|x86
+		{692B1DD1-B4E4-49C4-86E6-41D986404E2E}.Release|ARM.ActiveCfg = Release|ARM
+		{692B1DD1-B4E4-49C4-86E6-41D986404E2E}.Release|ARM.Build.0 = Release|ARM
+		{692B1DD1-B4E4-49C4-86E6-41D986404E2E}.Release|x64.ActiveCfg = Release|x64
+		{692B1DD1-B4E4-49C4-86E6-41D986404E2E}.Release|x64.Build.0 = Release|x64
+		{692B1DD1-B4E4-49C4-86E6-41D986404E2E}.Release|x86.ActiveCfg = Release|x86
+		{692B1DD1-B4E4-49C4-86E6-41D986404E2E}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EDB49CC6-16EC-435C-A807-2B1E8B4B75C0}
+	EndGlobalSection
+EndGlobal
