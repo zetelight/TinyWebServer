@@ -77,8 +77,6 @@ int main(int argc, char *argv[])
 
         /* Send response to client*/
         // hardcode the HTTP request
-        // TODO write a request handler to interpret a HTML page
-        // TODO modulize the project
         sprintf(buf, "HTTP/1.0 200 OK\r\n");
         send(client_fd, buf, strlen(buf), 0);
         send(client_fd, buf, strlen(buf), 0);
