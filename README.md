@@ -23,13 +23,12 @@ git clone https://zetecx@bitbucket.org/zetecx/cis330-project.git
 cd CIS/330-Project/WebServer
 make main
 make run
-
 ```
 
 ## TODO List
 
 * Write a request handler to interpret a HTML page
-* Write a method too determine the type of page
+* Write a method to determine the type of page
 * Modulize the project
 * Implement CGI
 * Multi-threads?
