@@ -10,7 +10,7 @@ Author: Xin Chen, Linman Tai
 4. able to display content on browser
 5. provide the ability to handle single thread, single process, and one connection per thread.
 
-## The advanced features of this webserver are:
+## The advanced features of this webserver
 
 1. interpret simple web pages, including some html or css elements
 2. process multi-threads.
