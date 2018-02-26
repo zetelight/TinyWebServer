@@ -4,7 +4,7 @@ Author: Xin Chen, Linman Tai
 
 ## Basic features
 
-1. handle http request
+1. handle http request (GET)
 2. interpret http request
 3. send the http response to server
 4. able to display content on browser
@@ -25,3 +25,11 @@ make main
 make run
 
 ```
+
+## TODO List
+
+* Write a request handler to interpret a HTML page
+* Write a method too determine the type of page
+* Modulize the project
+* Implement CGI
+* Multi-threads?
