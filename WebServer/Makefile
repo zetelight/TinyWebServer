@@ -1,11 +1,15 @@
-CXX = g++
-CFLAGS = -std=c++14 -g -Wall
+SOURCES = $(wildcard *.c)
 
-%.o : %.cpp
-	$(CXX) -c $(CFLAGS) $< 
+CC = gcc
+CFLAGS = -std=c11 -g -Wall
 
-main.exe: main.o server.o socket.o   
+%.o: %.c %.h
+	$(CC) -c $(CFLAGS) $<
+
+main.exe: main.o
 	$(CXX) -o $@ $^
-
+run: 
+	bash start.sh
+	
 clean: 
 	$(RM) $(wildcard *.exe) $(wildcard *.o)
