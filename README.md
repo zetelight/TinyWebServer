@@ -15,3 +15,13 @@ Author: Xin Chen, Linman Tai
 1. interpret simple web pages, including some html or css elements
 2. process multi-threads.
 3. process more complex content, e.g. streaming video.
+
+## Usage
+
+```shell
+git clone https://zetecx@bitbucket.org/zetecx/cis330-project.git
+cd CIS/330-Project/WebServer
+make main
+make run
+
+```

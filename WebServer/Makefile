@@ -6,7 +6,7 @@ CFLAGS = -std=c11 -g -Wall
 %.o: %.c %.h
 	$(CC) -c $(CFLAGS) $<
 
-main.exe: main.o
+main: main.o
 	$(CXX) -o $@ $^
 run: 
 	bash start.sh
