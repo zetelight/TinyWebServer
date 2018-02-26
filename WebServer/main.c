@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     /* Socket listen to request */
     if (listen(server_fd, MAX_QUEUE) < 0)
     {
-        printf("Listening socket failed\n");
+        printf("Binding socket failed\n");
         exit(EXIT_FAILURE);
     }
 
