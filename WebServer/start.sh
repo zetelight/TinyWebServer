@@ -14,7 +14,7 @@ fi;
 
 echo "***Will listen on port ${PORTNUM}***"
 
-./main.exe ${PORTNUM}
+./main ${PORTNUM}
 
 echo "***"
 echo "Simple web server started"
