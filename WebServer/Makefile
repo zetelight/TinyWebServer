@@ -8,8 +8,6 @@ CFLAGS = -std=c11 -g -Wall
 
 main: main.o
 	$(CXX) -o $@ $^
-run: 
-	bash start.sh
-	
+
 clean: 
 	$(RM) $(wildcard *.exe) $(wildcard *.o)
