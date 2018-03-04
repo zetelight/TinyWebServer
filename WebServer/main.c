@@ -26,22 +26,19 @@ int main(int argc, char *argv[])
     struct sockaddr_in client_addr; /* client address            */
     struct sockaddr_in server_addr; /* server address            */
     char buf[BUFF_SIZE];            /* Buffer to store html info */
-    char page[BUFF_SIZE];           /* Buffer to store html path */
     socklen_t client_addr_len = sizeof(client_addr);
 
     /* Check arguments */
     /*
     Expected arguments: 
     */
-    if (argc == 3)
+    if (argc == 2)
     {
         port = atoi(argv[1]);
-        sprintf(page, argv[2]); // this argument is for targeted page.
     }
-    else if (argc != 3)
+    else if (argc != 2)
     {
         port = PORT;
-        sprintf(page, ADDRESS);
     }
 
     /* Create a socket for server*/
