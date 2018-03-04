@@ -9,12 +9,14 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/stat.h>
+#include <unistd.h> 
 
 #define PORT 5000
 #define MAX_QUEUE 5 // the size of listen queue
-#define BUFF_SIZE 1024
+#define BUFF_SIZE 8192
 #define TRUE 1
 #define FALSE 0
+#define ADDRESS "test/trivia.html"
 
 int main(int argc, char *argv[])
 {
@@ -24,16 +26,22 @@ int main(int argc, char *argv[])
     struct sockaddr_in client_addr; /* client address            */
     struct sockaddr_in server_addr; /* server address            */
     char buf[BUFF_SIZE];            /* Buffer to store html info */
+    char page[BUFF_SIZE];           /* Buffer to store html path */
     socklen_t client_addr_len = sizeof(client_addr);
 
     /* Check arguments */
-    if (argc == 2)
+    /*
+    Expected arguments: 
+    */
+    if (argc == 3)
     {
         port = atoi(argv[1]);
+        sprintf(page, argv[2]); // this argument is for targeted page.
     }
-    else if (argc != 2)
+    else if (argc != 3)
     {
         port = PORT;
+        sprintf(page, ADDRESS);
     }
 
     /* Create a socket for server*/
@@ -41,7 +49,7 @@ int main(int argc, char *argv[])
     if (server_fd < 0)
     {
         printf("Creating a server socket failed\n");
-        exit(EXIT_FAILURE);
+        exit(1);
     }
     memset(&server_addr, 0, sizeof(server_addr));
 
@@ -54,14 +62,14 @@ int main(int argc, char *argv[])
     if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
     {
         printf("Binding socket failed\n");
-        exit(EXIT_FAILURE);
+        exit(1);
     }
 
     /* Socket listen to request */
     if (listen(server_fd, MAX_QUEUE) < 0)
     {
         printf("Listening socket failed\n");
-        exit(EXIT_FAILURE);
+        exit(1);
     }
 
     /* Start to listen request forever */
@@ -72,18 +80,23 @@ int main(int argc, char *argv[])
         if (client_fd < 0)
         {
             printf("Accpeting a request failed\n");
-            exit(EXIT_FAILURE);
+            exit(1);
         }
-
         /* Send response to client*/
-        // hardcode the HTTP request
+
+        // TODO parse the path user entered
+        // if exsits, 200 OK
+        // if forbidden, 401 forbidden
+        // if don't exsits, 404 NOT FOUND
+        // TODO parse the content fo web page
         sprintf(buf, "HTTP/1.0 200 OK\r\n");
-        send(client_fd, buf, strlen(buf), 0);
         send(client_fd, buf, strlen(buf), 0);
         sprintf(buf, "Content-Type: text/html\r\n");
         send(client_fd, buf, strlen(buf), 0);
         strcpy(buf, "\r\n");
         send(client_fd, buf, strlen(buf), 0);
+
+        /* Send the HTTP content*/
         sprintf(buf, "YES. I AM NOT JOKING! \r\n");
         send(client_fd, buf, strlen(buf), 0);
 
