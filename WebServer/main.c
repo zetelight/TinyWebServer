@@ -82,32 +82,37 @@ int main(int argc, char *argv[])
         struct stat sbuf;
         char buf[MAXLINE], command[MAXLINE], uri[MAXLINE], version[MAXLINE], request[MAXLINE], write_in[MAXBUF];
         char filename[MAXLINE];
-        Rio_readinitb(&rio,client_fd);
-        Rio_readlineb(&rio,buf,MAXLINE);
+        Rio_readinitb(&rio, client_fd);
+        Rio_readlineb(&rio, buf, MAXLINE);
         sscanf(buf, "%s %s %s", command, uri, version);
-        if (strcasecmp(command,"GET")){
+        if (strcasecmp(command, "GET"))
+        {
             printf("Not implemented this command\n");
             exit(EXIT_FAILURE);
         }
         Rio_readlineb(&rio, request, MAXLINE);
-        while(strcmp(request,"\r\n")){
+        while (strcmp(request, "\r\n"))
+        {
             Rio_readlineb(&rio, request, MAXLINE);
             printf("%s", request);
         }
 
         strcpy(filename, ".");
         strcat(filename, uri);
-        if (uri[strlen(uri)-1] == '/'){
+        if (uri[strlen(uri) - 1] == '/')
+        {
             strcat(filename, "home.html");
         }
 
-        if (stat(filename,&sbuf) < 0){
+        if (stat(filename, &sbuf) < 0)
+        {
             printf("File not found\n");
             close(client_fd);
             continue;
         }
 
-        if (!(S_ISREG(sbuf.st_mode))|| !(S_IRUSR & sbuf.st_mode)){
+        if (!(S_ISREG(sbuf.st_mode)) || !(S_IRUSR & sbuf.st_mode))
+        {
             printf("no permission to read this file\n");
             close(client_fd);
             continue;
@@ -125,7 +130,6 @@ int main(int argc, char *argv[])
         close(source);
         Rio_writen(client_fd, scptr, sbuf.st_size);
         munmap(scptr, sbuf.st_size);
-
 
         /* closen client socket */
         close(client_fd);
