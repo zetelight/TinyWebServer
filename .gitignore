@@ -40,3 +40,4 @@
 *.out
 *.app
 .vscode/settings.json
+main
