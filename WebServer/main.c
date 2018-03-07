@@ -80,13 +80,7 @@ int main(int argc, char *argv[])
             printf("Accpeting a request failed\n");
             exit(1);
         }
-        /* Send response to client*/
-
-        // TODO parse the path user entered
-        // if exsits, 200 OK
-        // if forbidden, 401 forbidden
-        // if don't exsits, 404 NOT FOUND
-        // TODO parse the content fo web page
+        /* Send response to client*/ 
         sprintf(buf, "HTTP/1.0 200 OK\r\n");
         send(client_fd, buf, strlen(buf), 0);
         sprintf(buf, "Content-Type: text/html\r\n");
