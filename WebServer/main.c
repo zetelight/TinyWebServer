@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <sys/stat.h>
 #include <unistd.h> 
+#include <pthread.h>
 
 #define PORT 5000
 #define MAX_QUEUE 5 // the size of listen queue
