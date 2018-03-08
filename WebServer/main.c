@@ -202,7 +202,7 @@ void serve_dynamic(int fd, char *filename, char *cgiargs)
 /*function for serving client, basic using R_IO function from textbook, which 
   using Rio_writen to write content to a socket*/
 void serve(int fd){
-    char request[MAXLINE], resource[MAXLINE], *ptr;
+    char request[MAXLINE], *ptr;
     char method[MAXLINE], uri[MAXLINE], version[MAXLINE];
     char filename[MAXLINE], cgiargs[MAXLINE];
     rio_t rio;
@@ -316,10 +316,16 @@ int main(int argc, char *argv[])
             printf("Accepting a request failed\n");
             exit(EXIT_FAILURE);
         }
+        else{
+            if (fork()==0){
+                serve(client_fd);
+                close(client_fd);
+                exit(0);
+            }else{
+                wait(NULL);
+            }
+        }
         
-        /*serve the client socket and close it*/
-        serve(client_fd);
-        close(client_fd);
     }
     /* closen server socket */
     close(server_fd);
