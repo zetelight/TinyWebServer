@@ -1,13 +1,13 @@
 SOURCES = $(wildcard *.c)
 
 CC = gcc
-CFLAGS = -std=c11 -g -Wall
+CFLAGS = -g -Wall
 
 %.o: %.c %.h
 	$(CC) -c $(CFLAGS) $<
 
 main: main.o server.o
-	$(CXX) -o $@ $^
+	$(CC) -o $@ $^
 run: 
 	bash start.sh
 	
