@@ -7,7 +7,7 @@ CFLAGS = -std=c11 -g -Wall
 	$(CC) -c $(CFLAGS) $<
 
 main: main.o
-	$(CXX) -o $@ $^
+	$(CXX) -lpthread -o $@ $^
 
 clean: 
 	$(RM) $(wildcard *.exe) $(wildcard *.o)
