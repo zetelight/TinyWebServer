@@ -7,7 +7,7 @@ CFLAGS = -g -Wall
 	$(CC) -c $(CFLAGS) $<
 
 main: main.o server.o
-	$(CC) -o $@ $^
+	$(CXX) -lpthread -o $@ $^
 run: 
 	bash start.sh
 	

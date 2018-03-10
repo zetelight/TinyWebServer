@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <sys/stat.h>
 #include "server.h"
+#include <pthread.h>
 
 #define PORT 5000
 #define MAX_QUEUE 5 // the size of listen queue
@@ -38,6 +39,32 @@ struct {
 	{"js","text/js"     },
     {"css","test/css"   }, 
 	{0,0} };
+
+
+void *connectTread(void *id)
+{
+    int client_fd = *(int *)&id;
+    char buf[BUFF_SIZE]; /* Buffer to store html info */
+    pthread_detach(pthread_self());
+    while (1)
+    {
+        /* Send response to client*/
+        sprintf(buf, "HTTP/1.0 200 OK\r\n");
+        send(client_fd, buf, strlen(buf), 0);
+        sprintf(buf, "Content-Type: text/html\r\n");
+        send(client_fd, buf, strlen(buf), 0);
+        strcpy(buf, "\r\n");
+        send(client_fd, buf, strlen(buf), 0);
+
+        /* Send the HTTP content*/
+        sprintf(buf, "YES. I AM NOT JOKING! \r\n");
+        send(client_fd, buf, strlen(buf), 0);
+    }
+    /* closen client socket */
+    close(client_fd);
+    pthread_exit(NULL);
+    return NULL;
+}
 
 /*function for reporting an error*/
 void clientError (int fd, int errnum, char *shortmsg, char *longmsg, char *cause){
