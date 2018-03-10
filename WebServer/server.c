@@ -1,204 +1,265 @@
 #include "server.h"
-
-/* $begin unixerror */
-void unix_error(char *msg) /* Unix-style error */
+#include "rio.h"
+struct
 {
-    fprintf(stderr, "%s: (%d: %s)\n", msg, errno, strerror(errno));
-    exit(EXIT_FAILURE);
-}
-/* $end unixerror */
-
-/*********************************************************************
- * The Rio package - robust I/O functions
- **********************************************************************/
-/*
- * rio_readn - robustly read n bytes (unbuffered)
- */
-/* $begin rio_readn */
-ssize_t rio_readn(int fd, void *usrbuf, size_t n) 
+    char *ext;
+    char *filetype;
+} extensions[] = {
+    {"gif", "image/gif"},
+    {"jpg", "image/jpeg"},
+    {"jpeg", "image/jpeg"},
+    {"png", "image/png"},
+    {"zip", "application/octet-stream"},
+    {"gz", "image/gz"},
+    {"tar", "image/tar"},
+    {"htm", "text/html"},
+    {"html", "text/html"},
+    {"php", "text/html"},
+    {"cgi", "text/cgi"},
+    {"asp", "text/asp"},
+    {"jsp", "image/jsp"},
+    {"xml", "text/xml"},
+    {"js", "text/js"},
+    {"css", "test/css"},
+    {0, 0}};
+/*function for serving static content, basic check the filetype then 
+  read through this file, then send it to the client socket.
+  */
+void serve_static(int fd, char *filename, int filesize)
 {
-    size_t nleft = n;
-    ssize_t nread;
-    char *bufp = usrbuf;
-
-    while (nleft > 0) {
-	if ((nread = read(fd, bufp, nleft)) < 0) {
-	    if (errno == EINTR) /* Interrupted by sig handler return */
-		nread = 0;      /* and call read() again */
-	    else
-		return -1;      /* errno set by read() */ 
-	} 
-	else if (nread == 0)
-	    break;              /* EOF */
-	nleft -= nread;
-	bufp += nread;
+    int sourcefd;
+    char *sourceptr, filetype[MAXLINE], buf[MAXLINE];
+    filetype[0] = 0;
+    getFileType(filename, filetype);
+    /*check if this file is php, if it's, run the specific function to interpret it*/
+    if (strstr(filename, ".php"))
+    {
+        php_cgi(filename, fd);
     }
-    return (n - nleft);         /* return >= 0 */
-}
-/* $end rio_readn */
-
-/*
- * rio_writen - robustly write n bytes (unbuffered)
- */
-/* $begin rio_writen */
-ssize_t rio_writen(int fd, void *usrbuf, size_t n) 
-{
-    size_t nleft = n;
-    ssize_t nwritten;
-    char *bufp = usrbuf;
-
-    while (nleft > 0) {
-	if ((nwritten = write(fd, bufp, nleft)) <= 0) {
-	    if (errno == EINTR)  /* Interrupted by sig handler return */
-		nwritten = 0;    /* and call write() again */
-	    else
-		return -1;       /* errno set by write() */
-	}
-	nleft -= nwritten;
-	bufp += nwritten;
+    /*check if it's an available file for this server*/
+    else if (strlen(filetype) == 0)
+    {
+        clientError(fd, 415, "Not Supported", "this file is not supported", filename);
+        return;
     }
-    return n;
-}
-/* $end rio_writen */
-
-
-/* 
- * rio_read - This is a wrapper for the Unix read() function that
- *    transfers min(n, rio_cnt) bytes from an internal buffer to a user
- *    buffer, where n is the number of bytes requested by the user and
- *    rio_cnt is the number of unread bytes in the internal buffer. On
- *    entry, rio_read() refills the internal buffer via a call to
- *    read() if the internal buffer is empty.
- */
-/* $begin rio_read */
-static ssize_t rio_read(rio_t *rp, char *usrbuf, size_t n)
-{
-    int cnt;
-
-    while (rp->rio_cnt <= 0) {  /* Refill if buf is empty */
-	rp->rio_cnt = read(rp->rio_fd, rp->rio_buf, 
-			   sizeof(rp->rio_buf));
-	if (rp->rio_cnt < 0) {
-	    if (errno != EINTR) /* Interrupted by sig handler return */
-		return -1;
-	}
-	else if (rp->rio_cnt == 0)  /* EOF */
-	    return 0;
-	else 
-	    rp->rio_bufptr = rp->rio_buf; /* Reset buffer ptr */
+    /*other static contents*/
+    else
+    {
+        printf("HTTP/1.0 200 OK, Content-type: %s", filetype);
+        sprintf(buf, "HTTP/1.0 200 OK\r\n");
+        sprintf(buf, "%sServer: Tiny Web Server\r\n", buf);
+        sprintf(buf, "%sContent-type: %s\r\n", buf, filetype);
+        sprintf(buf, "%sContent-length: %d\r\n\r\n", buf, filesize);
+        Rio_writen(fd, buf, strlen(buf));
     }
 
-    /* Copy min(n, rp->rio_cnt) bytes from internal buf to user buf */
-    cnt = n;          
-    if (rp->rio_cnt < n)   
-	cnt = rp->rio_cnt;
-    memcpy(usrbuf, rp->rio_bufptr, cnt);
-    rp->rio_bufptr += cnt;
-    rp->rio_cnt -= cnt;
-    return cnt;
-}
-/* $end rio_read */
-
-/*
- * rio_readinitb - Associate a descriptor with a read buffer and reset buffer
- */
-/* $begin rio_readinitb */
-void rio_readinitb(rio_t *rp, int fd) 
-{
-    rp->rio_fd = fd;  
-    rp->rio_cnt = 0;  
-    rp->rio_bufptr = rp->rio_buf;
-}
-/* $end rio_readinitb */
-
-/*
- * rio_readnb - Robustly read n bytes (buffered)
- */
-/* $begin rio_readnb */
-ssize_t rio_readnb(rio_t *rp, void *usrbuf, size_t n) 
-{
-    size_t nleft = n;
-    ssize_t nread;
-    char *bufp = usrbuf;
-    
-    while (nleft > 0) {
-	if ((nread = rio_read(rp, bufp, nleft)) < 0) 
-            return -1;          /* errno set by read() */ 
-	else if (nread == 0)
-	    break;              /* EOF */
-	nleft -= nread;
-	bufp += nread;
+    /*open the source file*/
+    sourcefd = open(filename, O_RDONLY, 0);
+    if (sourcefd < 0)
+    {
+        printf("Open Failure\n");
+        return;
     }
-    return (n - nleft);         /* return >= 0 */
-}
-/* $end rio_readnb */
-
-/* 
- * rio_readlineb - robustly read a text line (buffered)
- */
-/* $begin rio_readlineb */
-ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen) 
-{
-    int n, rc;
-    char c, *bufp = usrbuf;
-
-    for (n = 1; n < maxlen; n++) { 
-        if ((rc = rio_read(rp, &c, 1)) == 1) {
-	    *bufp++ = c;
-	    if (c == '\n') {
-                n++;
-     		break;
-            }
-	} else if (rc == 0) {
-	    if (n == 1)
-		return 0; /* EOF, no data read */
-	    else
-		break;    /* EOF, some data was read */
-	} else
-	    return -1;	  /* Error */
+    /*mapping it*/
+    sourceptr = mmap(0, filesize, PROT_READ, MAP_PRIVATE, sourcefd, 0);
+    if (sourceptr == ((void *)-1))
+    {
+        printf("Map failure\n");
+        return;
     }
-    *bufp = 0;
-    return n-1;
-}
-/* $end rio_readlineb */
-
-/**********************************
- * Wrappers for robust I/O routines
- **********************************/
-ssize_t Rio_readn(int fd, void *ptr, size_t nbytes) 
-{
-    ssize_t n;
-  
-    if ((n = rio_readn(fd, ptr, nbytes)) < 0)
-	unix_error("Rio_readn error");
-    return n;
+    close(sourcefd);
+    Rio_writen(fd, sourceptr, filesize);
+    munmap(sourceptr, filesize);
 }
 
-void Rio_writen(int fd, void *usrbuf, size_t n) 
+/*function for dynamic content, using CGI*/
+void serve_dynamic(int fd, char *filename, char *cgiargs)
 {
-    if (rio_writen(fd, usrbuf, n) != n)
-	unix_error("Rio_writen error");
+    char buf[MAXLINE], *emptylist[] = {NULL};
+
+    /* Return first part of HTTP response */
+    sprintf(buf, "HTTP/1.0 200 OK\r\n");
+    Rio_writen(fd, buf, strlen(buf));
+    sprintf(buf, "Server: Tiny Web Server\r\n");
+    Rio_writen(fd, buf, strlen(buf));
+
+    if (fork() == 0)
+    { /* child */
+        /* Real server would set all CGI vars here */
+        setenv("QUERY_STRING", cgiargs, 1);
+        dup2(fd, STDOUT_FILENO);              /* Redirect stdout to client */
+        execve(filename, emptylist, environ); /* Run CGI program */
+    }
+    wait(NULL); /* Parent waits for and reaps child */
 }
 
-void Rio_readinitb(rio_t *rp, int fd)
+/*function for serving client, basic using R_IO function from textbook, which 
+  using Rio_writen to write content to a socket*/
+void serve(int fd)
 {
-    rio_readinitb(rp, fd);
-} 
+    char request[MAXLINE], *ptr;
+    char method[MAXLINE], uri[MAXLINE], version[MAXLINE];
+    char filename[MAXLINE], cgiargs[MAXLINE];
+    rio_t rio;
+    struct stat sbuf;
+    int is_static;
 
-ssize_t Rio_readnb(rio_t *rp, void *usrbuf, size_t n) 
-{
-    ssize_t rc;
+    /*check if is a valid request*/
+    Rio_readinitb(&rio, fd);
+    if (Rio_readlineb(&rio, request, MAXLINE) == 0)
+    {
+        printf("Bad Read\n");
+    }
+    printf("%s\n", request);
+    ptr = strstr(request, "HTTP/");
+    if (ptr == NULL)
+    {
+        printf("NOT HTTP!\n");
+    }
+    else
+    {
+        *ptr = 0;
+        ptr = NULL;
+    }
 
-    if ((rc = rio_readnb(rp, usrbuf, n)) < 0)
-	unix_error("Rio_readnb error");
-    return rc;
+    /*get the method, uri and version from the request header*/
+    sscanf(request, "%s %s %s", method, uri, version);
+    if (strcasecmp(method, "GET"))
+    {
+        printf("501 Method not implemented\n");
+        clientError(fd, 501, "Method not implemented", "This tiny web server only implement GET method", method);
+        return;
+    }
+
+    read_requesthdrs(&rio); //go through the request header
+
+    /*check if the content is static*/
+    is_static = (int)parsing(uri, filename, cgiargs);
+    if (stat(filename, &sbuf) < 0)
+    {
+        clientError(fd, 404, "File Not Found", "Server couldn't find this file", filename);
+        return;
+    }
+
+    if (is_static)
+    {
+        if (!(S_ISREG(sbuf.st_mode)) || !(S_IRUSR & sbuf.st_mode))
+        {
+            clientError(fd, 403, "No Permission", "Have no permission to read this file or you're not a irregular user for this file", filename);
+            return;
+        }
+        serve_static(fd, filename, sbuf.st_size);
+    }
+    else
+    {
+        if (!(S_ISREG(sbuf.st_mode)) || !(S_IRUSR & sbuf.st_mode))
+        {
+            clientError(fd, 403, "No Permission", "Have no permission to read this file or you're not a irregular user for this file", filename);
+            return;
+        }
+        serve_dynamic(fd, filename, cgiargs);
+    }
 }
 
-ssize_t Rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen) 
+/*function for reporting an error*/
+void clientError(int fd, int errnum, char *shortmsg, char *longmsg, char *cause)
 {
-    ssize_t rc;
+    char buf[MAXLINE], body[MAXLINE];
 
-    if ((rc = rio_readlineb(rp, usrbuf, maxlen)) < 0)
-	unix_error("Rio_readlineb error");
-    return rc;
-} 
+    /*the header*/
+    sprintf(body, "<html><head><title>%d %s</head></title>", errnum, shortmsg);
+    sprintf(body, "%s<body><p>%d %s (%s): %s</p></body></html>", body, errnum, shortmsg, cause, longmsg);
+
+    /*actual error message*/
+    sprintf(buf, "%sHTTP/1.0 %d %s\r\n", buf, errnum, shortmsg);
+    sprintf(buf, "%sContent-type: text/html\r\n", buf);
+    sprintf(buf, "%sContent-length: %d\r\n\r\n", buf, (int)strlen(body));
+    Rio_writen(fd, buf, strlen(buf));
+    Rio_writen(fd, buf, strlen(body));
+}
+
+/*copy the correct type to filetype*/
+void getFileType(char *filename, char *filetype)
+{
+    for (int i = 0; extensions[i].ext != 0; i++)
+    {
+        if (strstr(filename, extensions[i].ext))
+        {
+            strcpy(filetype, extensions[i].filetype);
+            break;
+        }
+    }
+}
+/*read the request header*/
+void read_requesthdrs(rio_t *rp)
+{
+    char buf[MAXLINE];
+
+    Rio_readlineb(rp, buf, MAXLINE);
+    while (strcmp(buf, "\r\n"))
+    {
+        Rio_readlineb(rp, buf, MAXLINE);
+        printf("%s", buf);
+    }
+    return;
+}
+
+/*parsing the request*/
+int parsing(char *uri, char *filename, char *cgiargs)
+{
+    char *ptr;
+
+    /*this for static content*/
+    if (!strstr(uri, "cgi-bin"))
+    {
+        strcpy(cgiargs, "");
+        strcpy(filename, ".");
+        strcat(filename, uri);
+        if (uri[strlen(uri) - 1] == '/')
+        {
+            strcat(filename, "index.html");
+        }
+        return TRUE;
+    }
+
+    /*for dynamic content*/
+    else
+    {
+        ptr = index(uri, '?');
+        if (ptr)
+        {
+            strcpy(cgiargs, ptr + 1);
+            *ptr = '\0';
+        }
+        else
+        {
+            strcpy(cgiargs, "");
+        }
+        strcpy(filename, ".");
+        strcat(filename, uri);
+        return 0;
+    }
+}
+
+/*the function for dealing with php content*/
+void php_cgi(char *script_path, int fd)
+{
+    char buf[MAXLINE];
+    /*send the header to client*/
+    sprintf(buf, "HTTP/1.1 200 OK\n Server: Web Server in C\n Connection: close\n");
+    Rio_writen(fd, buf, strlen(buf));
+
+    /*dealing php with CGI*/
+    dup2(fd, STDOUT_FILENO);
+    char script[500];
+    strcpy(script, "SCRIPT_FILENAME=");
+    strcat(script, script_path);
+    putenv("GATEWAY_INTERFACE=CGI/1.1");
+    putenv(script);
+    putenv("QUERY_STRING=");
+    putenv("REQUEST_METHOD=GET");
+    putenv("REDIRECT_STATUS=true");
+    putenv("SERVER_PROTOCOL=HTTP/1.1");
+    putenv("REMOTE_HOST=127.0.0.1");
+    execl("/usr/bin/php-cgi", "php-cgi", NULL);
+}

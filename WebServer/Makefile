@@ -6,8 +6,8 @@ CFLAGS = -g -Wall
 %.o: %.c %.h
 	$(CC) -c $(CFLAGS) $<
 
-main: main.o server.o
-	$(CXX) -lpthread -o $@ $^
+main: main.o rio.o server.o
+	$(CXX) -pthread -o $@ $^
 run: 
 	bash start.sh
 	
