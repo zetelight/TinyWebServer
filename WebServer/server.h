@@ -2,27 +2,25 @@
 * Author: Adam Chen
 * Description: include head files releated about networking programming
 */
-#ifndef SERVER_HPP_
-#define SERVER_HPP_
+#ifndef SERVER_H_
+#define SERVER_H_
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-#include <ctype.h>
-#include <errno.h>
-#include <malloc.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/ioctl.h>
-#include <stdarg.h>
-#include <fcntl.h>
-#include <fcntl.h>
+#define PORT 5000
+#define MAX_QUEUE 20 // the size of listen queue
+#define BUFF_SIZE 8086
+#define MAX_THREADS 100
+#define TRUE 1
+#define FALSE 0
+#include "rio.h"
 
-int socket(int domain,int type,int protocol); 
+void serve_static(int fd, char *filename, int filesize);
+void serve_dynamic(int fd, char *filename, char *cgiargs);
+void clientError(int fd, int errnum, char *shortmsg, char *longmsg, char *cause);
+void getFileType(char *filename, char *filetype);
+void serve(int fd);
+void read_requesthdrs(rio_t *rp);
+int parsing(char *uri, char *filename, char *cgiargs);
+void php_cgi(char *script_path, int fd);
+
 
 #endif /* SERVER_H_ */

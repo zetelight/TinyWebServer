@@ -9,39 +9,19 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/stat.h>
-#include <unistd.h>
+#include "server.h"
 #include <pthread.h>
 
-#define PORT 5000
-#define MAX_QUEUE 5 // the size of listen queue
-#define BUFF_SIZE 8192
-#define TRUE 1
-#define FALSE 0
-#define ADDRESS "test/trivia.html"
-
-void *connectTread(void *id)
+/* thread  routine */
+void *connectTread(void *client_fd)
 {
-    int client_fd = *(int *)&id;
-    char buf[BUFF_SIZE]; /* Buffer to store html info */
-    pthread_detach(pthread_self());
-    while (1)
-    {
-        /* Send response to client*/
-        sprintf(buf, "HTTP/1.0 200 OK\r\n");
-        send(client_fd, buf, strlen(buf), 0);
-        sprintf(buf, "Content-Type: text/html\r\n");
-        send(client_fd, buf, strlen(buf), 0);
-        strcpy(buf, "\r\n");
-        send(client_fd, buf, strlen(buf), 0);
-
-        /* Send the HTTP content*/
-        sprintf(buf, "YES. I AM NOT JOKING! \r\n");
-        send(client_fd, buf, strlen(buf), 0);
-    }
-    /* closen client socket */
-    close(client_fd);
+    int fd = *((int *)client_fd);
+    printf("fd %d is serving\n", fd);
+    // detach itself
+    //pthread_detach(pthread_self());
+    serve(fd);
+    close(fd);
     pthread_exit(NULL);
-    return NULL;
 }
 
 int main(int argc, char *argv[])
@@ -51,12 +31,13 @@ int main(int argc, char *argv[])
     int port;                       /* port number               */
     struct sockaddr_in client_addr; /* client address            */
     struct sockaddr_in server_addr; /* server address            */
+    int id = 0;
     socklen_t client_addr_len = sizeof(client_addr);
 
+    /* Thread pool */
+    pthread_t tid[MAX_THREADS];
+
     /* Check arguments */
-    /*
-    Expected arguments: 
-    */
     if (argc == 2)
     {
         port = atoi(argv[1]);
@@ -100,21 +81,25 @@ int main(int argc, char *argv[])
     {
         /* Wait and accept for a request */
         client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
+        //pthread_t thread_id;
+        printf("client_fd %d is serving\n", client_fd);
         if (client_fd < 0)
         {
-            printf("Accpeting a request failed\n");
-            exit(1);
-        }
-        // Create a new thread
-        int t_id;
-        t_id = pthread_create(&thread_id, NULL, connectTread, (void *)&client_fd);
-        if (t_id < 0)
-        {
-            perror("Creating threads failed");
+            printf("Accepting a request failed\n");
+            exit(EXIT_FAILURE);
         }
         else
         {
-            printf("Thread %d is running \n", t_id);
+
+            /* Create a thread */
+            if (pthread_create(&tid[id], NULL, connectTread, (void *)&client_fd) < 0)
+            {
+                printf("Creating a thread failed\n");
+                exit(EXIT_FAILURE);
+            }
+            printf("thread %lu is running\n", (unsigned long)tid[id]);
+            id++;
+
         }
     }
     /* closen server socket */

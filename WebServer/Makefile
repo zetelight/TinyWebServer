@@ -1,13 +1,16 @@
 SOURCES = $(wildcard *.c)
 
 CC = gcc
-CFLAGS = -std=c11 -g -Wall
+CFLAGS = -g -Wall
 
 %.o: %.c %.h
 	$(CC) -c $(CFLAGS) $<
 
-main: main.o
-	$(CXX) -lpthread -o $@ $^
+
+main: main.o rio.o server.o
+	$(CXX) -pthread -o $@ $^
+run: 
+	bash start.sh
 
 clean: 
 	$(RM) $(wildcard *.exe) $(wildcard *.o)
