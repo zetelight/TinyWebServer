@@ -9,16 +9,15 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/stat.h>
-#include "server.h"
 #include <pthread.h>
+#include "server.h"
 
 /* thread  routine */
 void *connectTread(void *client_fd)
 {
     int fd = *((int *)client_fd);
     printf("fd %d is serving\n", fd);
-    // detach itself
-    //pthread_detach(pthread_self());
+    /* begin to serve */
     serve(fd);
     close(fd);
     pthread_exit(NULL);
@@ -31,7 +30,7 @@ int main(int argc, char *argv[])
     int port;                       /* port number               */
     struct sockaddr_in client_addr; /* client address            */
     struct sockaddr_in server_addr; /* server address            */
-    int id = 0;
+    int id = 0;                     /* index for threads                          */
     socklen_t client_addr_len = sizeof(client_addr);
 
     /* Thread pool */
@@ -90,7 +89,6 @@ int main(int argc, char *argv[])
         }
         else
         {
-
             /* Create a thread */
             if (pthread_create(&tid[id], NULL, connectTread, (void *)&client_fd) < 0)
             {
@@ -99,7 +97,6 @@ int main(int argc, char *argv[])
             }
             printf("thread %lu is running\n", (unsigned long)tid[id]);
             id++;
-
         }
     }
     /* closen server socket */

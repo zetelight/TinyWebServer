@@ -1,6 +1,6 @@
 # Week 9
 
-Progress: We implement the feature that web server can analyze dynamic page(CGI) and multi-threads
+Progress: We implement the feature that web server can analyze dynamic page(CGI) and process multi-threads
 
 Issues:
 
@@ -9,3 +9,4 @@ Issues:
 Reference:
 
 1. CSAPP chapter 11 & 12
+2. POSIX Threads Programming
