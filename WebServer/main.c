@@ -12,16 +12,16 @@
 #include "server.h"
 #include <pthread.h>
 
-
-
 /* thread  routine */
-void *connectTread(int fd)
+void *connectTread(void *client_fd)
 {
+    int fd = *((int *)client_fd);
+    printf("fd %d is serving\n", fd);
     // detach itself
-    pthread_detach(pthread_self());
+    //pthread_detach(pthread_self());
     serve(fd);
     close(fd);
-    return NULL;
+    pthread_exit(NULL);
 }
 
 int main(int argc, char *argv[])
@@ -31,8 +31,11 @@ int main(int argc, char *argv[])
     int port;                       /* port number               */
     struct sockaddr_in client_addr; /* client address            */
     struct sockaddr_in server_addr; /* server address            */
-    //char buf[BUFF_SIZE];            /* Buffer to store html info */
+    int id = 0;
     socklen_t client_addr_len = sizeof(client_addr);
+
+    /* Thread pool */
+    pthread_t tid[MAX_THREADS];
 
     /* Check arguments */
     if (argc == 2)
@@ -77,7 +80,8 @@ int main(int argc, char *argv[])
     {
         /* Wait and accept for a request */
         client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
-        pthread_t thread_id;
+        //pthread_t thread_id;
+        printf("client_fd %d is serving\n", client_fd);
         if (client_fd < 0)
         {
             printf("Accepting a request failed\n");
@@ -85,22 +89,25 @@ int main(int argc, char *argv[])
         }
         else
         {
-            if (fork() == 0)
+            //if (fork() == 0)
+            //{
+            /* Create a thread */
+            if (pthread_create(&tid[id], NULL, connectTread, (void *)&client_fd) < 0)
             {
-                if (pthread_create(&thread_id, NULL, (void *)connectTread, (void *)client_fd) < 0)
-                {
-                    printf("Creating a thread failed\n");
-                    exit(EXIT_FAILURE);
-                }
-                printf("thread %lu is running\n", (unsigned long)pthread_self());
-                //serve(client_fd);
-                //close(client_fd);
-                exit(0);
+                printf("Creating a thread failed\n");
+                exit(EXIT_FAILURE);
             }
-            else
-            {
-                wait(NULL);
-            }
+            printf("thread %lu is running\n", (unsigned long)tid[id]);
+            id++;
+            //serve(client_fd);
+            //close(client_fd);
+            //pthread_join(thread_id, NULL);
+            //exit(0);
+            // }
+            // else
+            // {
+            //     wait(NULL);
+            // }
         }
     }
     /* closen server socket */
