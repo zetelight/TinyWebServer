@@ -20,7 +20,7 @@ Author: Xin Chen, Linman Tai
 
 ```shell
 git clone https://zetecx@bitbucket.org/zetecx/cis330-project.git
-cd CIS/330-Project/WebServer
+cd CIS330-Project/WebServer
 make main
 make run
 ```
