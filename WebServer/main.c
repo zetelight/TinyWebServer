@@ -73,14 +73,12 @@ int main(int argc, char *argv[])
         printf("Listening socket failed\n");
         exit(1);
     }
-    pthread_t thread_id;
 
     /* Start to listen request forever */
     while (TRUE)
     {
         /* Wait and accept for a request */
         client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
-        //pthread_t thread_id;
         printf("client_fd %d is serving\n", client_fd);
         if (client_fd < 0)
         {
