@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     int port;                       /* port number               */
     struct sockaddr_in client_addr; /* client address            */
     struct sockaddr_in server_addr; /* server address            */
-    int id = 0;                     /* index for threads                          */
+    int id = 0;                     /* index for threads         */
     socklen_t client_addr_len = sizeof(client_addr);
 
     /* Thread pool */
