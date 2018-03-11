@@ -14,3 +14,4 @@ run:
 
 clean: 
 	$(RM) $(wildcard *.exe) $(wildcard *.o)
+	rm main

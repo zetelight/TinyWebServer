@@ -7,7 +7,7 @@
 
 #define PORT 5000
 #define MAX_QUEUE 20 // the size of listen queue
-#define BUFF_SIZE 8086
+#define BUFF_SIZE 8096
 #define MAX_THREADS 100
 #define TRUE 1
 #define FALSE 0
