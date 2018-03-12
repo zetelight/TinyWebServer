@@ -45,7 +45,7 @@ void serve_static(int fd, char *filename, int filesize)
     /*other static contents*/
     else
     {
-        printf("HTTP/1.0 200 OK, Content-type: %s", filetype);
+        printf("HTTP/1.1 200 OK, Content-type: %s", filetype);
         sprintf(buf, "HTTP/1.0 200 OK\r\n");
         sprintf(buf, "%sServer: Tiny Web Server\r\n", buf);
         sprintf(buf, "%sContent-type: %s\r\n", buf, filetype);
@@ -111,7 +111,7 @@ void serve(int fd)
         printf("Bad Read\n");
     }
     printf("%s\n", request);
-    ptr = strstr(request, "HTTP/");
+    ptr = strstr(request, "HTTP/");//check if the request is http request
     if (ptr == NULL)
     {
         printf("NOT HTTP!\n");
@@ -138,23 +138,29 @@ void serve(int fd)
     if (stat(filename, &sbuf) < 0)
     {
         clientError(fd, 404, "File Not Found", "Server couldn't find this file", filename);
+        stat("./test/404.html", &sbuf);
+        serve_static(fd, "./test/404.html", sbuf.st_size);
         return;
     }
 
-    if (is_static)
+    if (is_static)//serve static
     {
-        if (!(S_ISREG(sbuf.st_mode)) || !(S_IRUSR & sbuf.st_mode))
+        if (!(S_ISREG(sbuf.st_mode)) || !(S_IRUSR & sbuf.st_mode))//check the stats of the file
         {
             clientError(fd, 403, "No Permission", "Have no permission to read this file or you're not a irregular user for this file", filename);
+            stat("./test/403.html", &sbuf);
+            serve_static(fd, "./test/403.html", sbuf.st_size);
             return;
         }
         serve_static(fd, filename, sbuf.st_size);
     }
-    else
+    else//serve dynamic 
     {
         if (!(S_ISREG(sbuf.st_mode)) || !(S_IRUSR & sbuf.st_mode))
         {
             clientError(fd, 403, "No Permission", "Have no permission to read this file or you're not a irregular user for this file", filename);
+            stat("./test/403.html", &sbuf);
+            serve_static(fd, "./test/403.html", sbuf.st_size);
             return;
         }
         serve_dynamic(fd, filename, cgiargs);
@@ -166,16 +172,28 @@ void clientError(int fd, int errnum, char *shortmsg, char *longmsg, char *cause)
 {
     char buf[MAXLINE], body[MAXLINE];
 
-    /*the header*/
-    sprintf(body, "<html><head><title>%d %s</head></title>", errnum, shortmsg);
-    sprintf(body, "%s<body><p>%d %s (%s): %s</p></body></html>", body, errnum, shortmsg, cause, longmsg);
+    if (errnum == 404){//simply write the 404.html to client, finished in serve
+        return;
+    }
+    else if (errnum == 403){//same as above but using 403.html
+        return;
+    }
+    
+    else{
+        /*the header*/
+        sprintf(body, "<html><head><title>%d %s</head></title>", errnum, shortmsg);
+        sprintf(body, "%s<body><p>%d %s (%s): %s</p></body></html>", body, errnum, shortmsg, cause, longmsg);
 
-    /*actual error message*/
-    sprintf(buf, "%sHTTP/1.0 %d %s\r\n", buf, errnum, shortmsg);
-    sprintf(buf, "%sContent-type: text/html\r\n", buf);
-    sprintf(buf, "%sContent-length: %d\r\n\r\n", buf, (int)strlen(body));
-    Rio_writen(fd, buf, strlen(buf));
-    Rio_writen(fd, buf, strlen(body));
+        /*actual error message*/
+        sprintf(buf, "%sHTTP/1.0 %d %s\r\n", buf, errnum, shortmsg);
+        sprintf(buf, "%sContent-type: text/html\r\n", buf);
+        sprintf(buf, "%sContent-length: %d\r\n\r\n", buf, (int)strlen(body));
+        Rio_writen(fd, buf, strlen(buf));
+        Rio_writen(fd, buf, strlen(body));
+
+    }
+    
+    
 }
 
 /*copy the correct type to filetype*/
@@ -183,7 +201,7 @@ void getFileType(char *filename, char *filetype)
 {
     for (int i = 0; extensions[i].ext != 0; i++)
     {
-        if (strstr(filename, extensions[i].ext))
+        if (strstr(filename, extensions[i].ext))//go through the list of extensions to check
         {
             strcpy(filetype, extensions[i].filetype);
             break;
@@ -215,7 +233,8 @@ int parsing(char *uri, char *filename, char *cgiargs)
         strcpy(cgiargs, "");
         strcpy(filename, ".");
         strcat(filename, uri);
-        if (uri[strlen(uri) - 1] == '/')
+    
+        if (uri[strlen(uri) - 1] == '/')//check if it's calling the home page
         {
             strcat(filename, "index.html");
         }
