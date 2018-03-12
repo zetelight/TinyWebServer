@@ -6,9 +6,9 @@
 #define SERVER_H_
 
 #define PORT 5000
-#define MAX_QUEUE 20 // the size of listen queue
+#define MAX_QUEUE 50 // the size of listen queue
 #define BUFF_SIZE 8096
-#define MAX_THREADS 100
+#define MAX_THREADS 200
 #define TRUE 1
 #define FALSE 0
 #include "rio.h"
