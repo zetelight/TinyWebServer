@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
     {
         /* Wait and accept for a request */
         client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
+        printf("\n");
         printf("client_fd %d is serving\n", client_fd);
         if (client_fd < 0)
         {
