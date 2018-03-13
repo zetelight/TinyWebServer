@@ -103,6 +103,8 @@ void serve(int fd)
     rio_t rio;
     struct stat sbuf;
     int is_static;
+    char *ret;//use for check invalid address
+    int status;//use for check stat of the file
 
     /*check if is a valid request*/
     Rio_readinitb(&rio, fd);
@@ -137,7 +139,25 @@ void serve(int fd)
 
     /*check if the content is static*/
     is_static = (int)parsing(uri, filename, cgiargs);
-    if (stat(filename, &sbuf) < 0)
+
+    ret = strstr(filename,"//");
+    if (ret == NULL){
+        ret = strstr(filename, "~");
+        if (ret == NULL){
+            ret = strstr(filename, "..");
+        }
+    }
+
+    status = stat(filename, &sbuf);
+
+    if (ret != NULL){
+        clientError(fd, 403, "No Permission", "Have no permission to read this file or you're not a irregular user for this file", filename);
+            stat("./test/403.html", &sbuf);
+            serve_static(fd, "./test/403.html", sbuf.st_size);
+            return;
+    }
+
+    if (status < 0)
     {
         clientError(fd, 404, "File Not Found", "Server couldn't find this file", filename);
         stat("./test/404.html", &sbuf);
