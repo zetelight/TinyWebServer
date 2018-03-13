@@ -105,12 +105,19 @@ void serve(int fd)
     int is_static;
     char *ret;//use for check invalid address
     int status;//use for check stat of the file
+    int badread;
+
 
     /*check if is a valid request*/
     Rio_readinitb(&rio, fd);
-    //if (request == NULL) return;
-    //printf("request: %s\n", request);
-    if (Rio_readlineb(&rio, request, MAXLINE) == 0)
+    
+    badread = Rio_readlineb(&rio, request, MAXLINE);
+
+    if(request[0] == '\0'){
+        return;
+    }
+
+    if (badread == 0)
     {
         printf("Bad Read\n");
     }
