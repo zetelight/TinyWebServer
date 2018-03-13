@@ -1,6 +1,6 @@
 # CIS 330 GROUP PROJECT - Simple Web server
 
-Author: Xin Chen, Linman Tai
+Author: Xin Chen, Mantai Lin
 
 ## Basic features
 
