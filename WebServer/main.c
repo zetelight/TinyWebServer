@@ -17,9 +17,12 @@ void *connectTread(void *client_fd)
 {
     int fd = *((int *)client_fd);
     printf("fd %d is serving\n", fd);
+    /* detach itself */
+    pthread_detach(pthread_self());
     /* begin to serve */
     serve(fd);
     close(fd);
+    //sleep(5);
     pthread_exit(NULL);
 }
 
@@ -94,7 +97,7 @@ int main(int argc, char *argv[])
                 printf("Creating a thread failed\n");
                 exit(EXIT_FAILURE);
             }
-            printf("thread %lu is running\n", (unsigned long)tid[id]);
+            printf("thread %d is running\n", id);
             id++;
         }
     }

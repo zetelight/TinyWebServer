@@ -45,7 +45,7 @@ void serve_static(int fd, char *filename, int filesize)
     /*other static contents*/
     else
     {
-        printf("HTTP/1.1 200 OK, Content-type: %s", filetype);
+        printf("HTTP/1.1 200 OK, Content-type: %s\n", filetype);
         sprintf(buf, "HTTP/1.0 200 OK\r\n");
         sprintf(buf, "%sServer: Tiny Web Server\r\n", buf);
         sprintf(buf, "%sContent-type: %s\r\n", buf, filetype);
@@ -106,6 +106,8 @@ void serve(int fd)
 
     /*check if is a valid request*/
     Rio_readinitb(&rio, fd);
+    //if (request == NULL) return;
+    //printf("request: %s\n", request);
     if (Rio_readlineb(&rio, request, MAXLINE) == 0)
     {
         printf("Bad Read\n");
