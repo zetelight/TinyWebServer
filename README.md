@@ -24,11 +24,16 @@ cd CIS330-Project/WebServer
 make main
 make run
 ```
+
+Then, open browser and enter "localhost:5000"
+
 ## Note
 
-1. The default port is 5000 but user could run the project by 
-```
+* The default port is 5000 but user could run the project by 
+
+```shell
 ./main 8000(port number)
 ```
-2. We provide links for all testable html pages within index.html
-3. We can handle some 404/403 errors, such as invalid url, or urls which have wrong formats. 
+
+* We provide links for all testable html pages within index.html but they can be accessed by "localhost:xxxx/{file path}" manually, e.g. localhost:5000/test/test1.png or localhost:5000/test/trivia.html.
+* We can handle some 404/403 errors, such as invalid url, or urls which have wrong formats.
