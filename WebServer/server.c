@@ -1,3 +1,5 @@
+#define _XOPEN_SOURCE
+#define _DEFAULT_SOURCE
 #include "server.h"
 #include "rio.h"
 struct
