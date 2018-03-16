@@ -1,7 +1,7 @@
 SOURCES = $(wildcard *.c)
 
 CC = gcc
-CFLAGS = -g -Wall
+CFLAGS = -std=c11 -g -Wall
 
 %.o: %.c %.h
 	$(CC) -c $(CFLAGS) $<
