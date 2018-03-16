@@ -24,3 +24,11 @@ cd CIS330-Project/WebServer
 make main
 make run
 ```
+## Note
+
+1. The default port is 5000 but user could run the project by 
+```
+./main 8000(port number)
+```
+2. We provide links for all testable html pages within index.html
+3. We can handle some 404/403 errors, such as invalid url, or urls which have wrong formats. 
